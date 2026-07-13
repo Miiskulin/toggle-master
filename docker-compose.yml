@@ -57,6 +57,11 @@ services:
         condition: "service_healthy"
       auth-service:
         condition: "service_healthy"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8002/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   postgres-targeting:
     image: postgres:16
@@ -85,6 +90,31 @@ services:
         condition: "service_healthy"
       auth-service:
         condition: "service_healthy"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8003/health')\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  dynamodb-local:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+
+  analytics-service:
+    build: ./analytics-service
+    ports:
+      - "8005:8005"
+    environment:
+      PORT: "8005"
+      AWS_REGION: "us-east-1"
+      AWS_SQS_URL: "${AWS_SQS_URL}"
+      AWS_DYNAMODB_TABLE: "toggle-analytics"
+      AWS_ENDPOINT_URL_DYNAMODB: "http://dynamodb-local:8000"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+    depends_on:
+      - dynamodb-local
 
   redis:
     image: redis:7
@@ -93,3 +123,25 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  evaluation-service:
+    build: ./evaluation-service
+    ports:
+      - "8004:8004"
+    environment:
+      PORT: "8004"
+      REDIS_URL: "redis://redis:6379"
+      FLAG_SERVICE_URL: "http://flag-service:8002"
+      TARGETING_SERVICE_URL: "http://targeting-service:8003"
+      SERVICE_API_KEY: "tm_key_7f86d9a2a559db7d1f109a6e4f966721f796a63a2472709ba39dcfb960fae0c5"
+      AWS_REGION: "us-east-1"
+      AWS_SQS_URL: "${AWS_SQS_URL}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+    depends_on:
+      auth-service:
+        condition: "service_healthy"
+      flag-service:
+        condition: "service_healthy"
+      targeting-service:
+        condition: "service_healthy"

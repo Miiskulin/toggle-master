@@ -3,7 +3,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: auth_user
-      POSTGRES_PASSWORD: auth_pass
+      POSTGRES_PASSWORD: "${AUTH_DB_PASSWORD}"
       POSTGRES_DB: auth_db
     volumes:
     - ./auth-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql #Bind-mount
@@ -19,8 +19,8 @@ services:
       - "8001:8001"
     environment:
       PORT: "8001"
-      DATABASE_URL: "postgres://auth_user:auth_pass@postgres-auth:5432/auth_db"
-      MASTER_KEY: "admin-secreto-123"
+      DATABASE_URL: "postgres://auth_user:${AUTH_DB_PASSWORD}@postgres-auth:5432/auth_db"
+      MASTER_KEY: "${MASTER_KEY}"
     depends_on:
       postgres-auth:
         condition: "service_healthy"
@@ -35,7 +35,7 @@ services:
     environment:
       POSTGRES_USER: flag_user
       POSTGRES_PASSWORD: flag_pass
-      POSTGRES_DB: flag_db
+      POSTGRES_DB: "${FLAG_DB_PASSWORD}"
     volumes:
     - ./flag-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -50,7 +50,7 @@ services:
       - "8002:8002"
     environment:
       PORT: "8002"
-      DATABASE_URL: "postgres://flag_user:flag_pass@postgres-flag:5432/flag_db"
+      DATABASE_URL: "postgres://flag_user:${FLAG_DB_PASSWORD}@postgres-flag:5432/flag_db"
       AUTH_SERVICE_URL: "http://auth-service:8001"
     depends_on:
       postgres-flag:
@@ -68,7 +68,7 @@ services:
     environment:
       POSTGRES_USER: targeting_user
       POSTGRES_PASSWORD: targeting_pass
-      POSTGRES_DB: targeting_db
+      POSTGRES_DB: "${TARGETING_DB_PASSWORD}"
     volumes:
     - ./targeting-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -83,7 +83,7 @@ services:
       - "8003:8003"
     environment:
       PORT: "8003"
-      DATABASE_URL: "postgres://targeting_user:targeting_pass@postgres-targeting:5432/targeting_db"
+      DATABASE_URL: "postgres://targeting_user:${TARGETING_DB_PASSWORD}@postgres-targeting:5432/targeting_db"
       AUTH_SERVICE_URL: "http://auth-service:8001"
     depends_on:
       postgres-targeting:
@@ -133,7 +133,7 @@ services:
       REDIS_URL: "redis://redis:6379"
       FLAG_SERVICE_URL: "http://flag-service:8002"
       TARGETING_SERVICE_URL: "http://targeting-service:8003"
-      SERVICE_API_KEY: "tm_key_7f86d9a2a559db7d1f109a6e4f966721f796a63a2472709ba39dcfb960fae0c5"
+      SERVICE_API_KEY: "${SERVICE_API_KEY}"
       AWS_REGION: "us-east-1"
       AWS_SQS_URL: "${AWS_SQS_URL}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"

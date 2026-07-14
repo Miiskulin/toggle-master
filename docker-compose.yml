@@ -34,8 +34,8 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: flag_user
-      POSTGRES_PASSWORD: flag_pass
-      POSTGRES_DB: "${FLAG_DB_PASSWORD}"
+      POSTGRES_PASSWORD: "${FLAG_DB_PASSWORD}"
+      POSTGRES_DB: flag_db
     volumes:
     - ./flag-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -67,8 +67,8 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: targeting_user
-      POSTGRES_PASSWORD: targeting_pass
-      POSTGRES_DB: "${TARGETING_DB_PASSWORD}"
+      POSTGRES_PASSWORD: "${TARGETING_DB_PASSWORD}"
+      POSTGRES_DB: targeting_db
     volumes:
     - ./targeting-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
